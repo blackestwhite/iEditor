@@ -1,0 +1,75 @@
+*, *::after, *::before{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+#container{
+    width: 100vw;
+    height: calc(50vh - 48px);
+    display: flex;
+    overflow: hidden;
+}
+#player{
+    width: 100vw;
+    height: calc(50vh - 48px);
+    display: flex;
+    overflow: hidden;
+}
+#mim-header{
+    height: 48px;
+    background-color: rgb(48, 52, 73);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+}
+.recording--state-active::after{
+    content: ' ';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255, 0, 76);
+    border-radius: 50%;
+    animation: blink 1.2s infinite;
+}
+
+#rec{
+    width: 24px;
+    height: 24px;
+    background-color: rgb(255, 0, 76);
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    margin-right: 32px;
+}
+
+@keyframes blink{
+    0%{
+        transform: scale(1);
+    }
+
+    100%{
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+#cur {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background-color: #eee;
+    border-radius: 50%;
+    transition: 0.2s all ease-in-out;
+    box-shadow: 0px 0px 30px 6px #eee;
+}
+
+.click--state-active::after{
+    content: ' ';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(58, 33, 104);
+    border-radius: 50%;
+    animation: blink 0.6s infinite;
+}
