@@ -6,7 +6,6 @@ var editor = monaco.editor.create(document.getElementById("container"), {
 
 
 var eventArray = [];
-var mouseEvents = [];
 var recording = false;
 var starting = 0;
 var ending = 0;
@@ -22,7 +21,7 @@ var specials = [
     {key: 'Control', action: null},
     {key: 'Shift', action: null},
     {key: 'CapsLock', action: null},
-    {key: 'Enter', action: 'type', data: {text: '\n'}},
+    {key: 'Enter', action: null},
     {key: 'ContextMenu', action: 'editor.action.showContextMenu'},
     {key: 'Escape', action: null}
 ];
@@ -33,20 +32,24 @@ window.editor.onKeyDown( (event) => {
         var special = specials.filter(action => action.key == event.browserEvent.key)
         if (special.length != 0){
             //its special cmd
-            console.log(special);
-            eventArray.push({eventType: special[0].action, eventThen: special[0].data , eventTime: window.performance.now() - starting})
+            console.log(special[0]);
+            var itemToPush = {eventRelatesTo: 'keyboard-sp', eventData: specials[0], timeStamp: window.performance.now() - starting}
+            eventArray.push(itemToPush)
         }else{
-            console.log(event.browserEvent.key);
-            eventArray.push({eventType: 'type', eventData:{text: event.browserEvent.key}, eventTime: window.performance.now() - starting})
+            var itemToPush = {eventRelatesTo: 'keyboard', eventData: event, timeStamp: window.performance.now() - starting}
+            eventArray.push(itemToPush)
         }
     }
 });
 
 window.editor.onMouseMove( e => {
     if (recording){
-        mouseEvents.push({e, t: window.performance.now() - starting})
+        var itemToPush = {eventRelatesTo: 'mouse', eventData: e, timeStamp: window.performance.now() - starting};
+        eventArray.push(itemToPush)
     }
 })
+
+
 
 but.addEventListener('click',e=>{
     recording = true;
@@ -64,6 +67,7 @@ stop.addEventListener('click', e=>{
 
 
 
+
 var playerEditor = monaco.editor.create(document.getElementById("player"), {
     value: "",
     language: "javascript",
@@ -73,25 +77,27 @@ var playerEditor = monaco.editor.create(document.getElementById("player"), {
 var save = document.getElementById('save');
 save.addEventListener('click', e => {
     eventArray.forEach(item => {
-        setTimeout(()=>{
-            playerEditor.trigger(null,item.eventType, item.eventData)
-            if(item.eventThen) {
-                playerEditor.trigger(null, item.eventType, item.eventThen)
-            }
-        }, item.eventTime)
-
-    })
-
-
-    mouseEvents.forEach( item => {
-        let cur = document.getElementById('cur');
-        setTimeout(()=>{
-            var ed2 = document.getElementById('player');
-            cur.style.top = `${ed2.offsetTop + item.e.event.posy -48}px`;
-            cur.style.left = `${ed2.offsetLeft + item.e.event.posx}px`;
-        }, item.t)
+        if(item.eventRelatesTo == 'mouse'){
+            //trigger click, mouse movements
+            let ed2 = document.getElementById('player');
+            let cur = document.getElementById('cur');
+            setTimeout(()=>{
+                cur.style.top = `${item.eventData.event.posy + ed2.offsetTop - 48}px`;
+                cur.style.left = `${item.eventData.event.posx + ed2.offsetLeft}px`;
+            }, item.timeStamp)
+        }else if(item.eventRelatesTo == 'keyboard'){
+            //trigger type
+            setTimeout(()=>{
+                playerEditor.trigger(null, 'type', {text: item.eventData.browserEvent.key})
+            }, item.timeStamp)
+        }else{
+            //special cmd keys
+        }
     })
 })
+
+
+//event
 
 
 // if (navigator.mediaDevices) {

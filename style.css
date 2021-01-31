@@ -11,7 +11,7 @@
 }
 #player{
     width: 100vw;
-    height: calc(50vh - 48px);
+    height: calc(50vh - 0px);
     display: flex;
     overflow: hidden;
 }
