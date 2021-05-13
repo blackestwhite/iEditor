@@ -49,7 +49,9 @@ window.editor.onMouseMove( e => {
     }
 })
 
-
+window.editor.onDidChangeModelContent(e => {
+    console.log(e);
+})
 
 but.addEventListener('click',e=>{
     recording = true;
@@ -157,3 +159,5 @@ save.addEventListener('click', e => {
 //         }
 //     })
 // }
+
+console.log(editor);
