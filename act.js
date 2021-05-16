@@ -3,7 +3,11 @@ var editor = monaco.editor.create(document.getElementById("container"), {
     language: "javascript",
     theme: "vs-dark",
 });
-
+var playerEditor = monaco.editor.create(document.getElementById("player"), {
+    value: "",
+    language: "javascript",
+    theme: "vs-dark",
+});
 
 var eventArray = [];
 var recording = false;
@@ -11,36 +15,8 @@ var starting = 0;
 var ending = 0;
 var but = document.getElementById('rec');
 var stop = document.getElementById('stop');
-var specials = [
-    {key: 'ArrowUp', action: 'cursorUp'},
-    {key: 'ArrowDown', action: 'cursorDown'},
-    {key: 'ArrowLeft', action: 'cursorLeft'},
-    {key: 'ArrowRight', action: 'cursorRight'},
-    {key: 'Backspace', action: 'deleteLeft'},
-    {key: 'Delete', action: 'deleteRight'},
-    {key: 'Control', action: null},
-    {key: 'Shift', action: null},
-    {key: 'CapsLock', action: null},
-    {key: 'Enter', action: null},
-    {key: 'ContextMenu', action: 'editor.action.showContextMenu'},
-    {key: 'Escape', action: null}
-];
 
 
-window.editor.onKeyDown( (event) => {
-    if (recording) {
-        var special = specials.filter(action => action.key == event.browserEvent.key)
-        if (special.length != 0){
-            //its special cmd
-            console.log(special[0]);
-            var itemToPush = {eventRelatesTo: 'keyboard-sp', eventData: specials[0], timeStamp: window.performance.now() - starting}
-            eventArray.push(itemToPush)
-        }else{
-            var itemToPush = {eventRelatesTo: 'keyboard', eventData: event, timeStamp: window.performance.now() - starting}
-            eventArray.push(itemToPush)
-        }
-    }
-});
 
 window.editor.onMouseMove( e => {
     if (recording){
@@ -49,9 +25,6 @@ window.editor.onMouseMove( e => {
     }
 })
 
-window.editor.onDidChangeModelContent(e => {
-    console.log(e);
-})
 
 but.addEventListener('click',e=>{
     recording = true;
@@ -70,34 +43,17 @@ stop.addEventListener('click', e=>{
 
 
 
-var playerEditor = monaco.editor.create(document.getElementById("player"), {
-    value: "",
-    language: "javascript",
-    theme: "vs-dark",
-});
+
 
 var save = document.getElementById('save');
 save.addEventListener('click', e => {
-    eventArray.forEach(item => {
-        if(item.eventRelatesTo == 'mouse'){
-            //trigger click, mouse movements
-            let ed2 = document.getElementById('player');
-            let cur = document.getElementById('cur');
-            setTimeout(()=>{
-                cur.style.top = `${item.eventData.event.posy + ed2.offsetTop - 48}px`;
-                cur.style.left = `${item.eventData.event.posx + ed2.offsetLeft}px`;
-            }, item.timeStamp)
-        }else if(item.eventRelatesTo == 'keyboard'){
-            //trigger type
-            setTimeout(()=>{
-                playerEditor.trigger(null, 'type', {text: item.eventData.browserEvent.key})
-            }, item.timeStamp)
-        }else{
-            //special cmd keys
-        }
-    })
+
 })
 
+window.editor.onDidChangeModelContent(e => {
+    console.log(e.changes[0]);
+    window.playerEditor.executeEdits("mainEditor", e.changes);
+})
 
 //event
 
