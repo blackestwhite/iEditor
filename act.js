@@ -18,13 +18,21 @@ var stop = document.getElementById('stop');
 
 
 
-window.editor.onMouseMove( e => {
-    if (recording){
-        var itemToPush = {eventRelatesTo: 'mouse', eventData: e, timeStamp: window.performance.now() - starting};
-        eventArray.push(itemToPush)
-    }
-})
+window.editor.onMouseMove(e => recording && mouseMove(e))
+window.editor.onMouseDown(e => recording && mouseMove(e))
 
+function mouseMove(e) {
+    let eventInstance = {
+        timeStamp: performance.now(),
+        event: e.event
+    }
+    eventArray.push(eventInstance)
+}
+
+// var el = document.getElementById('cur');
+// let ed2 = document.getElementById('player');
+// el.style.top = `${pos.y + ed2.offsetTop - 48}px`;
+// el.style.left = `${pos.x + ed2.offsetLeft}px`;
 
 but.addEventListener('click',e=>{
     recording = true;
@@ -40,14 +48,8 @@ stop.addEventListener('click', e=>{
     console.log('end')
 })
 
-
-
-
-
-
 var save = document.getElementById('save');
 save.addEventListener('click', e => {
-
 })
 
 window.editor.onDidChangeModelContent(e => {
@@ -55,7 +57,6 @@ window.editor.onDidChangeModelContent(e => {
     window.playerEditor.executeEdits("mainEditor", e.changes);
 })
 
-//event
 
 
 // if (navigator.mediaDevices) {
@@ -115,5 +116,3 @@ window.editor.onDidChangeModelContent(e => {
 //         }
 //     })
 // }
-
-console.log(editor);
