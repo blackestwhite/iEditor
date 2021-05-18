@@ -50,10 +50,15 @@ stop.addEventListener('click', e=>{
 
 var save = document.getElementById('save');
 save.addEventListener('click', e => {
+    console.log(eventArray);
 })
 
 window.editor.onDidChangeModelContent(e => {
     console.log(e.changes[0]);
+    eventArray.push({
+        timeStamp: performance.now(),
+        event: e.changes[0]
+    })
     window.playerEditor.executeEdits("mainEditor", e.changes);
 })
 
