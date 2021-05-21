@@ -23,6 +23,7 @@ var saveRecordBtn  = document.getElementById('save');
 
 window.editor.onMouseMove(e => recording && mouseMove(e))
 window.editor.onMouseDown(e => recording && mouseMove(e))
+window.editor.onDidChangeModelContent(e => recording && handleModelChange(e))
 
 startRecordBtn.addEventListener('click', startRecord)
 pauseRecordBtn.addEventListener('click', pauseRecord)
@@ -35,15 +36,6 @@ pauseRecordBtn.addEventListener('click', pauseRecord)
 
 saveRecordBtn.addEventListener('click', e => {
     console.log(plots);
-})
-
-window.editor.onDidChangeModelContent(e => {
-    var now = performance.now();
-    eventsArray.push({
-        timestamp: now + (now - psTimestamp),
-        event: e
-    })
-    window.playerEditor.executeEdits("mainEditor", e.changes);
 })
 
 
@@ -87,8 +79,14 @@ function pauseRecord() {
 
 }
 
-
-
+function handleModelChange(e) {
+    var now = performance.now();
+    eventsArray.push({
+        timestamp: now + (now - psTimestamp),
+        event: e
+    })
+    window.playerEditor.executeEdits("mainEditor", e.changes);
+}
 
 
 
