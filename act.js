@@ -14,8 +14,10 @@ var plots          = [];
 var eventsArray    = [];
 var recording      = false;
 var psTimestamp    = 0;
-// var pauseTimestamp = 0;
+var startTimestamp = 0;
+var pauseTimestamp = 0;
 var endTimestamp   = 0;
+var freePeriods    = 0;
 
 var startRecordBtn = document.getElementById('rec');
 var pauseRecordBtn = document.getElementById('pause');
@@ -40,54 +42,67 @@ saveRecordBtn.addEventListener('click', e => {
 
 
 // functions
-function mouseMove(e) {
-    var now = performance.now();
-    let eventInstance = {
-        timestamp: now + (now - psTimestamp),
-        event: e.event
-    }
-    eventsArray.push(eventInstance)
-}
-
 function startRecord() {
     if (recording) return
-    recording = true;
+    // styling
     startRecordBtn.classList.add('recording--state-active');
-    psTimestamp = performance.now();
+
+    // functionality
+    recording = true;
+    startTimestamp = performance.now();
+    if (freePeriods == 0) {
+        freePeriods += startTimestamp
+    }else{
+        freePeriods += startTimestamp - pauseTimestamp
+    }
     let eventInstance = {
-        timestamp: psTimestamp,
+        timestamp: startTimestamp,
         event: 'recording started'
     }
     eventsArray.push(eventInstance)
-    console.log(`recording started at ${psTimestamp}`);
+
+    // logging
+    console.log(`recording started at ${eventInstance.timestamp}`);
 }
 
 function pauseRecord() {
     if (!recording) return
-    var now = performance.now()
-    recording = false;
+    // styling
     startRecordBtn.classList.remove('recording--state-active');
-    psTimestamp = now + (now - psTimestamp);
+
+    // functionality
+    recording = false;
+    pauseTimestamp = performance.now();
     let eventInstance = {
-        timestamp: psTimestamp,
+        timestamp: pauseTimestamp - freePeriods,
         event: 'recording paused'
     }
     eventsArray.push(eventInstance)
     plots.push(eventsArray);
     eventsArray = [];
-    console.log(`recording paused at ${psTimestamp}`)
+
+    // logging
+    console.log(`recording paused at ${eventInstance.timestamp}`)
 
 }
 
+// events
 function handleModelChange(e) {
     var now = performance.now();
     eventsArray.push({
-        timestamp: now + (now - psTimestamp),
+        timestamp: now - freePeriods,
         event: e
     })
     window.playerEditor.executeEdits("mainEditor", e.changes);
 }
-
+function mouseMove(e) {
+    var now = performance.now();
+    let eventInstance = {
+        timestamp: now - freePeriods,
+        event: e.event
+    }
+    eventsArray.push(eventInstance)
+}
 
 
 
