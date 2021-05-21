@@ -3,64 +3,106 @@ var editor = monaco.editor.create(document.getElementById("container"), {
     language: "javascript",
     theme: "vs-dark",
 });
+
 var playerEditor = monaco.editor.create(document.getElementById("player"), {
     value: "",
     language: "javascript",
     theme: "vs-dark",
 });
 
-var eventArray = [];
-var recording = false;
-var starting = 0;
-var ending = 0;
-var but = document.getElementById('rec');
-var stop = document.getElementById('stop');
+var plots          = [];
+var eventsArray    = [];
+var recording      = false;
+var psTimestamp    = 0;
+// var pauseTimestamp = 0;
+var endTimestamp   = 0;
 
-
+var startRecordBtn = document.getElementById('rec');
+var pauseRecordBtn = document.getElementById('pause');
+var saveRecordBtn  = document.getElementById('save');
 
 window.editor.onMouseMove(e => recording && mouseMove(e))
 window.editor.onMouseDown(e => recording && mouseMove(e))
 
-function mouseMove(e) {
-    let eventInstance = {
-        timeStamp: performance.now(),
-        event: e.event
-    }
-    eventArray.push(eventInstance)
-}
+startRecordBtn.addEventListener('click', startRecord)
+pauseRecordBtn.addEventListener('click', pauseRecord)
 
 // var el = document.getElementById('cur');
 // let ed2 = document.getElementById('player');
 // el.style.top = `${pos.y + ed2.offsetTop - 48}px`;
 // el.style.left = `${pos.x + ed2.offsetLeft}px`;
 
-but.addEventListener('click',e=>{
-    recording = true;
-    but.classList.add('recording--state-active');
-    starting = e.timeStamp;
-    console.log(e.timeStamp);
-})
 
-stop.addEventListener('click', e=>{
-    recording = false;
-    but.classList.remove('recording--state-active');
-    ending = e.timeStamp;
-    console.log('end')
-})
-
-var save = document.getElementById('save');
-save.addEventListener('click', e => {
-    console.log(eventArray);
+saveRecordBtn.addEventListener('click', e => {
+    console.log(plots);
 })
 
 window.editor.onDidChangeModelContent(e => {
-    console.log(e.changes[0]);
-    eventArray.push({
-        timeStamp: performance.now(),
-        event: e.changes[0]
+    var now = performance.now();
+    eventsArray.push({
+        timestamp: now + (now - psTimestamp),
+        event: e
     })
     window.playerEditor.executeEdits("mainEditor", e.changes);
 })
+
+
+// functions
+function mouseMove(e) {
+    var now = performance.now();
+    let eventInstance = {
+        timestamp: now + (now - psTimestamp),
+        event: e.event
+    }
+    eventsArray.push(eventInstance)
+}
+
+function startRecord() {
+    if (recording) return
+    recording = true;
+    startRecordBtn.classList.add('recording--state-active');
+    psTimestamp = performance.now();
+    let eventInstance = {
+        timestamp: psTimestamp,
+        event: 'recording started'
+    }
+    eventsArray.push(eventInstance)
+    console.log(`recording started at ${psTimestamp}`);
+}
+
+function pauseRecord() {
+    if (!recording) return
+    var now = performance.now()
+    recording = false;
+    startRecordBtn.classList.remove('recording--state-active');
+    psTimestamp = now + (now - psTimestamp);
+    let eventInstance = {
+        timestamp: psTimestamp,
+        event: 'recording paused'
+    }
+    eventsArray.push(eventInstance)
+    plots.push(eventsArray);
+    eventsArray = [];
+    console.log(`recording paused at ${psTimestamp}`)
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
