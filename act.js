@@ -22,6 +22,7 @@ var freePeriods    = 0;
 var startRecordBtn = document.getElementById('rec');
 var pauseRecordBtn = document.getElementById('pause');
 var saveRecordBtn  = document.getElementById('save');
+var playRecordBtn  = document.getElementById('play');
 
 window.editor.onMouseMove(e => recording && mouseMove(e))
 window.editor.onMouseDown(e => recording && mouseMove(e))
@@ -29,6 +30,7 @@ window.editor.onDidChangeModelContent(e => recording && handleModelChange(e))
 
 startRecordBtn.addEventListener('click', startRecord)
 pauseRecordBtn.addEventListener('click', pauseRecord)
+playRecordBtn.addEventListener('click', playRecord)
 
 // var el = document.getElementById('cur');
 // let ed2 = document.getElementById('player');
@@ -85,16 +87,28 @@ function pauseRecord() {
     console.log(`recording paused at ${eventInstance.timestamp}`)
 
 }
+function playRecord() {
+    console.log(recording)
+    if (recording) return
+    // styling
+    startRecordBtn.classList.remove('recording--state-active');
 
-// events
+    // functionality
+    playstart = performance.now();
+    playing = true
+
+    playRec()
+    
+}
+
 function handleModelChange(e) {
     var now = performance.now();
     eventsArray.push({
         timestamp: now - freePeriods,
         event: e
     })
-    window.playerEditor.executeEdits("mainEditor", e.changes);
 }
+
 function mouseMove(e) {
     var now = performance.now();
     let eventInstance = {
@@ -105,74 +119,32 @@ function mouseMove(e) {
 }
 
 
+var playing = false;
+// execute edit in 60 frames per second
+var playstart
+
+function playRec() {
 
 
+    console.log("playing state: ", playing);
+    if (!playing) return
+    playstart = performance.now();
+    plots.forEach(plot => {
+        plot.forEach(item => {
+            if (item.event.changes)
+                var inter = setInterval(()=>{
+                    treshold = window.performance.now() - playstart
+                    if (treshold > item.timestamp) {
+                        playerEditor.executeEdits("mainEditor", item.event.changes)
+                        clearInterval(inter)
+                        plot.shift()
+                    }
+                })
+        })
+    })
+
+    
+}
 
 
-
-
-
-
-
-
-
-
-
-
-// if (navigator.mediaDevices) {
-//     console.log('getUserMedia supported.');
-
-//     var constraints = { audio: true};
-//     var chunks = [];
-
-//     navigator.mediaDevices.getUserMedia(constraints).then(stream=>{
-//         var mediaRecorder = new MediaRecorder(stream);
-
-//         but.addEventListener('click',()=>{
-//             mediaRecorder.start();
-//         })
-//         stop.addEventListener('click',()=>{
-//             mediaRecorder.pause();
-//         })
-//         save.addEventListener('click',()=>{
-//             mediaRecorder.stop();
-//         })
-
-//         mediaRecorder.onstop = function(e) {
-//             console.log("data available after MediaRecorder.stop() called.");
-        
-//             var clipName = 'Enter a name for your sound clip';
-        
-//             var clipContainer = document.createElement('article');
-//             var clipLabel = document.createElement('p');
-//             var audio = document.createElement('audio');
-//             var deleteButton = document.createElement('button');
-        
-//             clipContainer.classList.add('clip');
-//             audio.setAttribute('controls', '');
-//             deleteButton.innerHTML = "Delete";
-//             clipLabel.innerHTML = clipName;
-        
-//             clipContainer.appendChild(audio);
-//             clipContainer.appendChild(clipLabel);
-//             clipContainer.appendChild(deleteButton);
-//             document.body.appendChild(clipContainer);
-        
-//             audio.controls = true;
-//             var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
-//             chunks = [];
-//             var audioURL = URL.createObjectURL(blob);
-//             audio.src = audioURL;
-//             console.log("recorder stopped");
-//             audio.play();
-//             deleteButton.onclick = function(e) {
-//                 evtTgt = e.target;
-//                 evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
-//             }
-//         }
-
-//         mediaRecorder.ondataavailable = function(e) {
-//             chunks.push(e.data);
-//         }
-//     })
-// }
+// playerEditor.executeEdits("mainEditor", item.event.changes)
